@@ -1,0 +1,9 @@
+{
+  "name": "webserial-audio",
+  "version": "0.0.1",
+  "description": "hack for transmitting data via a USB Audio microphone emulation instead of a serial port. Until the webserial API is deployed.",
+  "main": "webserial-audio.js",
+  "repository": "github.com/pscholl/webserial-audio",
+  "author": "Philipp M. Scholl <phil@ahlab.org>",
+  "license": "MIT"
+}

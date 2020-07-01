@@ -1,0 +1,68 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <title></title>
+</head>
+
+<body>
+
+  <h1>webserial-audio demo</h1>
+
+  <p>Choose one of the input devices below and the current value will be displayed.</p>
+
+  <div> device: <select name="device" id="devices"></select></div>
+
+  <div id='data'> </div>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src="webserial-audio.js"></script>
+
+  <script>
+    var select = async function(port) {
+      var devices = await wsaudio.enumerate();
+      var element = document.querySelector('#devices');
+      var oldport = port;
+
+      element.innerHTML = '';
+      for (var i=0; i !== devices.length; i++) {
+        var info = devices[i];
+        var opt = document.createElement("option");
+        opt.value = info.deviceId;
+        opt.text = info.label;
+        if (info.kind == 'audioinput')
+          element.appendChild(opt);
+      }
+
+      element.onchange = function() { start(oldport); };
+
+      if (element.value !== oldport.audio.getTracks()[0].getSettings().deviceId)
+        element.value = oldport.audio.getTracks()[0].getSettings().deviceId;
+    };
+
+  var start = async function(oldport) {
+      var display = document.querySelector('#data');
+      var option = document.querySelector('#devices');
+      var devid = option.value ? {exact:option.value} : undefined;
+
+      if (oldport) {
+        oldport.audio.getTracks().forEach(function(track) { track.stop(); });
+        oldport.context.close();
+      }
+
+      var port = await wsaudio
+        .requestPort({ audio: {deviceId: devid}});
+      await port.open();
+
+      port.readable.pipeToN(100, function(arr) {
+        display.innerText = arr;
+      });
+
+      await select(port);
+    };
+
+
+    start();
+
+  </script>
+</body>
+
+</html>
