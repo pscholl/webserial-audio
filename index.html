@@ -48,12 +48,11 @@
         oldport.context.close();
       }
 
-      var port = await wsaudio
-        .requestPort({ audio: {deviceId: devid}});
+      var port = await wsaudio.requestPort(devid);
       await port.open();
 
       port.readable.pipeToN(100, function(arr) {
-        display.innerText = arr;
+        display.innerHTML = arr.join('<br/>');
       });
 
       await select(port);

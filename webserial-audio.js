@@ -76,7 +76,7 @@ var wsaudio = {
               return;
 
             var arr = fun(ev.inputBuffer.getChannelData(0));
-            var out = ev.outputBuffer.getChannelData(0);
+            var out = ev.outputBuffer.getChannelData(1);
 
             for(var i=0; i < arr.length && i < out.length; i++)
               out[i] = arr[i];
@@ -100,16 +100,23 @@ var wsaudio = {
     return navigator.mediaDevices.enumerateDevices();
   },
 
-  requestPort: async function(constraint) {
+  requestPort: async function(devId) {
     /*
      * prompts the user to enable and choose a device, if not already
      * stored from previous sessions.
      *
-     *  constraint - used to select media device to capture, see
-     *                https://www.html5rocks.com/en/tutorials/getusermedia/intro/
+     *  devid - select only devid matching deviceID
+     *          https://www.html5rocks.com/en/tutorials/getusermedia/intro/
      */
-    constraint = constraint || {};
-    constraint.audio = constraint.audio || true;
+    constraint = {};
+    constraint.audio = {
+      deviceId: devId,
+      sampleRate: 48000,
+      echoCancellation: false,
+      autoGainControl: false,
+      noiseSuppression: false,
+      sampleSize: 16,
+      channelCount: 1 };
 
     return navigator.mediaDevices.getUserMedia(constraint)
       .then(stream => new wsaudio.Port(stream) )
