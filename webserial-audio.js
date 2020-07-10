@@ -30,18 +30,16 @@ var wsaudio = {
           // audio samples at 8kHz
           // sensor samples at 100Hz -> need every 80sample
           // XXX we assume that rate stay constant
-          var leftover = -1;
+          var leftover = 0;
           var node = ctx.createScriptProcessor(BUFSIZE, 1, 1);
           node.onaudioprocess = function(ev) {
             var buf = ev.inputBuffer.getChannelData(0);
             var step = ev.inputBuffer.sampleRate / 100;
-            var frame = new Float32Array( (buf.length + leftover) / step );
+            var frame = new Float32Array( (buf.length+leftover)  / step );
 
             //
-            // find the start of the frames, as anything that is non-zero
+            // find the start of the frames, and copy in what is non-zero
             //
-
-
             for (var i = buf.findIndex(x => x!=0), j = 0;
                      i < buf.length;
                      i += step, j += 1) {
@@ -51,7 +49,7 @@ var wsaudio = {
             };
 
             fun(frame);
-            //leftover = buf.length % step;
+            leftover = buf.length % step;
           }
 
           lastNode.connect(node);
@@ -116,7 +114,7 @@ var wsaudio = {
     constraint = {};
     constraint.audio = {
       deviceId: devId,
-      sampleRate: 48000,
+      sampleRate: 44100,
       autoGainControl: false,
       echoCancellation: false,
       noiseSuppression: false,
