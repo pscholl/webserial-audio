@@ -1,0 +1,86 @@
+<!doctype html>
+<head>
+  <meta charset="utf-8">
+  <title></title>
+</head>
+
+<body>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script>
+  function dostart() {
+    function gotdevice(stream) {
+      var display = document.querySelector('#data');
+
+      var ctx = new AudioContext();
+      var src = ctx.createMediaStreamSource(stream);
+      var node = ctx.createScriptProcessor(1024, 1, 1);
+      var leftover = 0;
+
+      node.onaudioprocess = function(ev) {
+        var buf = ev.inputBuffer.getChannelData(0);
+        var step = ev.inputBuffer.sampleRate / 100;
+        var frame = new Float32Array( (buf.length+leftover)  / step );
+
+        //
+        // find the start of the frames, and copy in what is non-zero
+        //
+        for (var i = buf.findIndex(x => x!=0), j = 0;
+                 i < buf.length;
+                 i += step, j += 1) {
+
+          frame[j] = buf[i];
+
+        };
+
+        leftover = buf.length % step;
+
+        //
+        // here's the actual action
+        //
+        display.innerHTML = frame.join('<br/>');
+      };
+
+      src.connect(node);
+    }
+
+    navigator.mediaDevices.getUserMedia(
+          { video: false,
+            audio: true })
+    .then((streams) => {
+    navigator.mediaDevices.enumerateDevices()
+    .then((devices) => {
+      devices = devices.filter((d) =>
+        d.label.includes('') && d.kind == 'audioinput');
+
+      navigator.mediaDevices.getUserMedia(
+        { video: false,
+          audio: {
+            deviceId: devices[0].deviceId,
+            autoGainControl: false,
+            echoCancellation: false,
+            noiseSuppression: false,
+              channelCount: 1 }})
+
+      .then(gotdevice)
+    })
+      .catch(e => {
+        console.log(e.name + ": "+ e.message);
+        var err = document.querySelector('#err');
+        err.style.visibility = 'visible';
+        err.innerText = 'No Kiwrious device found: ' + e.message;
+      });
+    });
+  };
+  </script> 
+
+  <h1>webserial-audio simple</h1>
+
+  <p>Shows data retrieved from one kiwrious device (if connected)</p>
+
+  <div id='data'> </div>
+  <button onclick='dostart()'>kiwrious?</button>
+  <div id='err' style='color:red; visibility: hidden'></err>
+
+</body>
+
+</html>
