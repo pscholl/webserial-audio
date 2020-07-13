@@ -53,42 +53,35 @@ var wsaudio = {
           }
 
           lastNode.connect(node);
+          //
+          // this is required for chrome to work
+          //
+          node.connect(ctx.destination);
           lastNode = undefined;
 
           return this;
         },
 
-        pipeTo: function(fun) {
-          var node = ctx.createScriptProcessor(BUFSIZE, 1, 1);
-          node.onaudioprocess = function(ev) {
-            if (ev.inputBuffer.length == 0)
-              return;
+        //
+        // XXX disabled since untested
+        //
+        // pipeThrough: function(fun) {
+        //   var node = ctx.createScriptProcessor(BUFSIZE, 1, 1);
+        //   node.onaudioprocess = function(ev) {
+        //     if (ev.inputBuffer.length == 0)
+        //       return;
 
-            fun(ev.inputBuffer.getChannelData(0));
-          };
-          lastNode.connect(node);
-          lastNode = undefined;
+        //     var arr = fun(ev.inputBuffer.getChannelData(0));
+        //     var out = ev.outputBuffer.getChannelData(1);
 
-          return this;
-        },
+        //     for(var i=0; i < arr.length && i < out.length; i++)
+        //       out[i] = arr[i];
+        //   };
+        //   lastNode.connect(node);
+        //   lastNode = node;
 
-        pipeThrough: function(fun) {
-          var node = ctx.createScriptProcessor(BUFSIZE, 1, 1);
-          node.onaudioprocess = function(ev) {
-            if (ev.inputBuffer.length == 0)
-              return;
-
-            var arr = fun(ev.inputBuffer.getChannelData(0));
-            var out = ev.outputBuffer.getChannelData(1);
-
-            for(var i=0; i < arr.length && i < out.length; i++)
-              out[i] = arr[i];
-          };
-          lastNode.connect(node);
-          lastNode = node;
-
-          return this;
-        }
+        //   return this;
+        // }
       }
 
       return this.readable;

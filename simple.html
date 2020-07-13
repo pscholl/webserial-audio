@@ -13,7 +13,7 @@
 
       var ctx = new AudioContext();
       var src = ctx.createMediaStreamSource(stream);
-      var node = ctx.createScriptProcessor(1024, 1, 1);
+      var node = ctx.createScriptProcessor(4096, 1, 1);
       var leftover = 0;
 
       node.onaudioprocess = function(ev) {
@@ -23,7 +23,7 @@
 
         //
         // find the start of the frames, and copy in what is non-zero
-        //
+        /
         for (var i = buf.findIndex(x => x!=0), j = 0;
                  i < buf.length;
                  i += step, j += 1) {
@@ -41,6 +41,7 @@
       };
 
       src.connect(node);
+      node.connect(ctx.destination);
     }
 
     navigator.mediaDevices.getUserMedia(
@@ -50,7 +51,7 @@
     navigator.mediaDevices.enumerateDevices()
     .then((devices) => {
       devices = devices.filter((d) =>
-        d.label.includes('') && d.kind == 'audioinput');
+        d.label.includes('Kiw') && d.kind == 'audioinput');
 
       navigator.mediaDevices.getUserMedia(
         { video: false,
@@ -59,7 +60,7 @@
             autoGainControl: false,
             echoCancellation: false,
             noiseSuppression: false,
-              channelCount: 1 }})
+              channelCount: 1 }}, gotdevice)
 
       .then(gotdevice)
     })
